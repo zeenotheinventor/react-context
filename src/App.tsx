@@ -1,23 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import UserProfile, { UserContext } from "./UserProfile";
+import { User } from "./UserProfile/types";
+import { useEffect, useState } from "react";
+import { getUser } from "./user-service";
+import Cask from "./Cask";
 
 function App() {
+  const [user, setUser] = useState<User>({ age: 10, name: "Default", gender: "female" });
+
+  const refreshUser = async (): Promise<void> => {
+    const user: User = await getUser();
+    setUser(user);
+  };
+
+  useEffect((): (() => void) => {
+    let mounted: boolean = true;
+
+    if (mounted) {
+      refreshUser()
+        .then()
+        .catch((e) => console.log(e));
+    }
+
+    return (): void => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <button onClick={refreshUser}>New User</button>
+        <UserContext.Provider value={user}>
+          <UserProfile />
+          <Cask />
+        </UserContext.Provider>
       </header>
     </div>
   );
